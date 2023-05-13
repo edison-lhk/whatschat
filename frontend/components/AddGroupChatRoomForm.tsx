@@ -5,12 +5,17 @@ import { BACKEND_URL } from "@env";
 import { Fontisto } from '@expo/vector-icons';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GroupChatRoomType, UserType } from "../types/app";
+import { Socket } from "socket.io-client";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-const AddGroupChatRoomForm = ({ user, socket, setRenderAddGroupChatRoomForm, setSnapPoints, closeMenuHandler }: { user: any, socket: any, setRenderAddGroupChatRoomForm: React.Dispatch<React.SetStateAction<boolean>>, setSnapPoints: any, closeMenuHandler: () => void }) => {
-    const [groupNameInput, setGroupNameInput] = useState('');
-    const [emailInput, setEmailInput] = useState('');
-    const [userResult, setUserResult] = useState<{ _id: string, username: string, email: string, profilePic: string | undefined, bio: string | undefined } | null>(null);
-    const [users, setUsers] = useState([user]);
+const AddGroupChatRoomForm = ({ socket, setRenderAddGroupChatRoomForm, setSnapPoints, closeMenuHandler }: { socket: Socket, setRenderAddGroupChatRoomForm: React.Dispatch<React.SetStateAction<boolean>>, setSnapPoints: React.Dispatch<React.SetStateAction<string[]>>, closeMenuHandler: () => void }) => {
+    const user = useSelector((state: RootState) => state.user);
+    const [groupNameInput, setGroupNameInput] = useState<string>('');
+    const [emailInput, setEmailInput] = useState<string>('');
+    const [userResult, setUserResult] = useState<UserType | null>(null);
+    const [users, setUsers] = useState<UserType[]>([user]);
     const [typingTimer, setTypingTimer] = useState<any>(null);
     const emailInputRef = useRef<TextInput>(null);
     const navigation = useNavigation();
@@ -37,7 +42,7 @@ const AddGroupChatRoomForm = ({ user, socket, setRenderAddGroupChatRoomForm, set
     };
 
     const addUser = () => {
-        setUsers(prevUsers => [...prevUsers, userResult]);
+        setUsers((prevUsers: UserType[]) => [...prevUsers, userResult] as UserType[]);
         setUserResult(null);
         setEmailInput('');
         emailInputRef!.current!.blur();
@@ -56,9 +61,9 @@ const AddGroupChatRoomForm = ({ user, socket, setRenderAddGroupChatRoomForm, set
     };
 
     useEffect(() => {
-        socket.on('create-group-chat-room', ({ room }: { room: any }) => {
+        socket.on('create-group-chat-room', ({ room }: { room: GroupChatRoomType }) => {
             closeMenuHandler();
-            navigation.navigate('Group Chat Room' as never, { room } as never);
+            navigation.navigate('Group Chat Room' as never, { roomId: room._id } as never);
         });
     }, []);
 
@@ -97,7 +102,7 @@ const AddGroupChatRoomForm = ({ user, socket, setRenderAddGroupChatRoomForm, set
                             <Text style={styles.username}>{ user.username }</Text>
                             <Text style={styles.bio}>{ user.bio ? user.bio : 'Available' }</Text>
                         </View>
-                        <TouchableOpacity style={styles.includeBtn} onPress={() => removeUser(user._id)}>
+                        <TouchableOpacity style={styles.includeBtn} onPress={() => removeUser(user!._id!)}>
                             <Fontisto name="checkbox-active" size={27} color="#009EDC" />
                         </TouchableOpacity>
                     </TouchableOpacity>

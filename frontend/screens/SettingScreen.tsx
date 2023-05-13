@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import { StyleSheet, SafeAreaView, TouchableWithoutFeedback, Keyboard, View, Text, TouchableOpacity, Image, TextInput, Alert, Platform } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import FooterBar from "../components/FooterBar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from 'expo-image-picker';
 import axios from "axios";
 import { BACKEND_URL } from "@env";
+import { RootState } from '../redux/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUser, updateProfilePic, updateUsername, updateBio, logoutUser } from "../redux/features/userSlice";
 
 const SettingScreen = () => {
-    const { user, socket, setUser } = useRoute().params as { user: any, socket: any, setUser: any };
+    const user = useSelector((state: RootState) => state.user);
+    const { socket } = useRoute().params as { socket: any };
     const [profilePic, setProfilePic] = useState(user.profilePic);
     const [username, setUsername] = useState(user.username);
+    const [typingUsernameTimer, setTypingUsernameTimer] = useState<any>(null);
     const [bio, setBio] = useState(user.bio ? user.bio : 'Available');
+    const [typingBioTimer, setTypingBioTimer] = useState<any>(null);
+    const dispatch = useDispatch();
+    const navigation = useNavigation();
 
     const editProfilePic = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -37,11 +45,41 @@ const SettingScreen = () => {
             try {
                 const response = await axios.patch(`${BACKEND_URL}/api/users/update-profile-pic/${user._id}`, formData, { headers: { Authorization: 'Bearer ' + JSON.parse(token as string), "Content-Type": 'multipart/form-data' } });
                 setProfilePic(response.data.profilePic);
-                user.profilePic = response.data.profilePic;
-                await AsyncStorage.setItem('user', JSON.stringify(user));
+                dispatch(updateProfilePic(response.data.profilePic));
+                console.log(user);
             } catch(error: any) {
                 Alert.alert('Error', error.response.data.error ? error.response.data.error : error.message, [{ text: 'Ok' }]);
             }
+        };
+    };
+
+    const onChangeUsername = (text: string) => {
+        setUsername(text);
+        clearTimeout(typingUsernameTimer);
+        const timer = setTimeout(() => editUsername(text), 2000);
+        setTypingUsernameTimer(timer);
+    };
+
+    const editUsername = async (text: string) => {
+        if (username) {
+            const token = await AsyncStorage.getItem('token');
+            await axios.patch(`${BACKEND_URL}/api/users/update-username/${user._id}`, { username: text }, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
+            dispatch(updateUsername(text));
+        };
+    };
+
+    const onChangeBio = (text: string) => {
+        setBio(text);
+        clearTimeout(typingBioTimer);
+        const timer = setTimeout(() => editBio(text), 2000);
+        setTypingBioTimer(timer);
+    };
+
+    const editBio = async (text: string) => {
+        if (bio) {
+            const token = await AsyncStorage.getItem('token');
+            await axios.patch(`${BACKEND_URL}/api/users/update-bio/${user._id}`, { bio: text }, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
+            dispatch(updateBio(text));
         };
     };
 
@@ -53,9 +91,9 @@ const SettingScreen = () => {
     };
 
     const logout = async () => {
-        await AsyncStorage.removeItem('user');
-        setUser(null);
+        dispatch(logoutUser());
         socket.disconnect();
+        navigation.navigate('Login' as never);
     };
 
     return (
@@ -71,7 +109,7 @@ const SettingScreen = () => {
                             <Text style={styles.editProfilePicBtnText}>Edit</Text>
                         </TouchableOpacity>
                         <View style={styles.username}>
-                        <TextInput style={styles.usernameText} value={username} onChangeText={(text: string) => setUsername(text)} autoComplete="off" autoCorrect={false} autoCapitalize='none' />
+                        <TextInput style={styles.usernameText} value={username} onChangeText={onChangeUsername} autoComplete="off" autoCorrect={false} autoCapitalize='none' />
                         </View>
                     </View>
                     <View style={styles.emailContainer}>
@@ -83,7 +121,7 @@ const SettingScreen = () => {
                     <View style={styles.bioContainer}>
                         <Text style={styles.bioHeaderText}>About Me</Text>
                             <View style={styles.bio}>
-                                <TextInput style={styles.bioText} value={bio} onChangeText={(text: string) => setBio(text)} autoComplete="off" autoCorrect={false} autoCapitalize='none' multiline />
+                                <TextInput style={styles.bioText} value={bio} onChangeText={onChangeBio} autoComplete="off" autoCorrect={false} autoCapitalize='none' multiline />
                             </View>
                         </View>
                     <TouchableOpacity style={styles.logoutBtn} onPress={renderLogoutModal}>

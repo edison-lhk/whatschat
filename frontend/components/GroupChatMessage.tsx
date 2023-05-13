@@ -1,13 +1,14 @@
 import React from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import moment from 'moment';
+import { UserType } from "../types/app";
 
-const GroupChatMessage = ({ user, sender, text, createdAt }: { user: any, sender: any, text: string, createdAt: string }) => {
+const GroupChatMessage = ({ user, sender, text, createdAt }: { user: UserType, sender: UserType, text: string, createdAt: string }) => {
     return (
         <>
             {user._id !== sender._id ? (
                 <View style={styles.messageReceived}>
-                    <Image style={styles.profilePic} source={sender.profilePic ? sender.profilePic : require('../assets/profile-pic.png')} />
+                    <Image style={{ width: 40, height: sender.profilePic ? 40 : 90, borderRadius: 40 / 2 }} source={sender.profilePic ? { uri: sender.profilePic } : require('../assets/profile-pic.png')} />
                     <View style={styles.infoContainer}>
                         <View style={styles.senderContainer}>
                             <Text style={styles.username}>~{ sender.username }</Text>
@@ -36,10 +37,6 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         gap: 10,
         marginVertical: 5,
-    },
-    profilePic: {
-        width: 40,
-        height: 90
     },
     infoContainer: {
         minHeight: 40,

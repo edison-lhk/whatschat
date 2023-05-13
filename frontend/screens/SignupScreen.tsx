@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, SafeAreaView, View, Image, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert, Platform, KeyboardAvoidingView } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
 import { BACKEND_URL } from "@env";
+import { RootState } from "../redux/store";
+import { useSelector } from 'react-redux';
 
 const SignupScreen = () => {
     const navigation = useNavigation();
@@ -10,6 +12,7 @@ const SignupScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const user = useSelector((state: RootState) => state.user);
 
     const signupUser = async () => {
         if (!username || !email || !password || !confirmPassword) {
@@ -39,6 +42,10 @@ const SignupScreen = () => {
             Alert.alert('Error', error.response.data.error, [{ text: 'ok' }]);
         }; 
     };
+
+    useEffect(() => {
+        if (user.online) navigation.navigate('Home' as never);
+    });
 
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>

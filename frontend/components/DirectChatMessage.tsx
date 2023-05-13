@@ -1,8 +1,12 @@
 import React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import moment from 'moment';
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-const DirectChatMessage = ({ user, sender, text, createdAt }: { user: any, sender: string, text: string, createdAt: string }) => {
+const DirectChatMessage = ({ sender, text, createdAt }: { sender: string, text: string, createdAt: string }) => {
+    const user = useSelector((state: RootState) => state.user);
+
     return (
         <View style={[styles.message, { backgroundColor: user._id === sender ? '#25D366' : 'white', alignSelf: user._id === sender ? 'flex-end' : 'flex-start' }]}>
             <Text style={styles.text}>{ text }</Text>

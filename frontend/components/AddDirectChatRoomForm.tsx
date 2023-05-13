@@ -4,12 +4,17 @@ import { useNavigation } from "@react-navigation/native";
 import { BACKEND_URL } from "@env";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DirectChatRoomType, UserType } from "../types/app";
+import { Socket } from "socket.io-client";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-const AddDirectChatRoomForm = ({ user, socket, setRenderAddDirectChatRoomForm, setSnapPoints, closeMenuHandler }: { user: any, socket: any, setRenderAddDirectChatRoomForm: React.Dispatch<React.SetStateAction<boolean>>, setSnapPoints: any, closeMenuHandler: () => void }) => {
-    const [emailInput, setEmailInput] = useState('');
-    const [userResult, setUserResult] = useState<{ _id: string, username: string, email: string, profilePic: string | undefined, bio: string | undefined } | null>(null);
+const AddDirectChatRoomForm = ({ socket, setRenderAddDirectChatRoomForm, setSnapPoints, closeMenuHandler }: { socket: Socket, setRenderAddDirectChatRoomForm: React.Dispatch<React.SetStateAction<boolean>>, setSnapPoints: React.Dispatch<React.SetStateAction<string[]>>, closeMenuHandler: () => void }) => {
+    const [emailInput, setEmailInput] = useState<string>('');
+    const [userResult, setUserResult] = useState<UserType | null>(null);
     const [typingTimer, setTypingTimer] = useState<any>(null);
     const navigation = useNavigation();
+    const user = useSelector((state: RootState) => state.user);
 
     const onChangeText = (email: string) => {
         setEmailInput(email);
@@ -37,9 +42,9 @@ const AddDirectChatRoomForm = ({ user, socket, setRenderAddDirectChatRoomForm, s
     };
 
     useEffect(() => {
-        socket.on('create-direct-chat-room', ({ room }: { room: any }) => {
+        socket.on('create-direct-chat-room', ({ room }: { room: DirectChatRoomType }) => {
             closeMenuHandler();
-            navigation.navigate('Direct Chat Room' as never, { room, user2: room.users[0]._id !== user._id ? room.users[0] : room.users[1] } as never);
+            navigation.navigate('Direct Chat Room' as never, { room, user2: room!.users![0]._id !== user._id ? room!.users![0] : room!.users![1] } as never);
         });
     }, []);
 

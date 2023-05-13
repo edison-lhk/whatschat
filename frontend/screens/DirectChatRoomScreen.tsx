@@ -7,24 +7,31 @@ import MessageBar from "../components/MessageBar";
 import axios from "axios";
 import { BACKEND_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DirectChatRoomType, DirectChatRoomMessageType } from "../types/app";
+import { Socket } from "socket.io-client";
+import { RootState } from "../redux/store";
+import { useSelector, useDispatch } from "react-redux";
+import { updateDirectChatRoomWallpaper } from "../redux/features/directChatRoomsSlice";
 
 const DirectChatRoomScreen = () => {
-    const { user, socket, room, user2, wallpaperUrl } = useRoute().params as { user: any, socket: any, room: any, user2: any, wallpaperUrl: any };
-    const [messages, setMessages] = useState<{ id: number, roomId: number, sender: string, text: string, createdAt: string }[]>([]);
+    const { socket, roomId } = useRoute().params as { socket: Socket, roomId: string };
+    const [messages, setMessages] = useState<DirectChatRoomMessageType[]>([]);
+    const room = useSelector((state: RootState) => state.directChatRooms).find((room: DirectChatRoomType) => room._id === roomId);
+    const dispatch = useDispatch();
 
     const fetchAllMessages = async () => {
         try {
             const token = await AsyncStorage.getItem('token');
-            const response = await axios.get(`${BACKEND_URL}/api/messages/direct-chat/${room._id}`, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
+            const response = await axios.get(`${BACKEND_URL}/api/messages/direct-chat/${room!._id}`, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
             setMessages(response.data.messages);
-            await AsyncStorage.setItem(`direct-chat-room/${room._id}`, JSON.stringify(response.data.messages));
+            await AsyncStorage.setItem(`direct-chat-room/${room!._id}`, JSON.stringify(response.data.messages));
         } catch(error: any) {
             Alert.alert('Error', error.response.data.error ? error.response.data.error: error.message, [{ text: 'Ok' }]);
         };
     };
 
     useEffect(() => {
-        AsyncStorage.getItem(`direct-chat-room/${room._id}`).then((messages: any) => {
+        AsyncStorage.getItem(`direct-chat-room/${room!._id}`).then((messages: string | null) => {
             if (messages) {
                 setMessages(JSON.parse(messages));
             } else {
@@ -34,20 +41,23 @@ const DirectChatRoomScreen = () => {
         socket.on('error', ({ message }: { message: string }) => {
             Alert.alert('Error', message, [{ text: 'Ok' }]);
         });
-        socket.on('send-direct-chat', ({ newMessage }: { newMessage: any }) => {
+        socket.on('send-direct-chat', ({ newMessage }: { newMessage: DirectChatRoomMessageType }) => {
             setMessages((prevMessages: any) => {
-                AsyncStorage.setItem(`direct-chat-room/${room._id}`, JSON.stringify([...prevMessages, newMessage]));
+                AsyncStorage.setItem(`direct-chat-room/${room!._id}`, JSON.stringify([...prevMessages, newMessage]));
                 return [...prevMessages, newMessage];
             });
+        });
+        socket.on('update-direct-chat-room-wallpaper', async ({ roomId, wallpaper }: { roomId: string, wallpaper: string }) => {
+            dispatch(updateDirectChatRoomWallpaper({ roomId, wallpaper }));
         });
     }, []);
 
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <SafeAreaView style={styles.container}>
-                <DirectChatRoomHeader roomId={room._id} user2={user2} />
-                <DirectChatContainer user={user} wallpaper={room.wallpaper} messages={messages} />
-                <MessageBar socket={socket} roomId={room._id} type='direct' />
+                <DirectChatRoomHeader roomId={roomId} />
+                <DirectChatContainer roomId={roomId} messages={messages} />
+                <MessageBar socket={socket} roomId={roomId} type='direct' />
             </SafeAreaView>
         </TouchableWithoutFeedback>
     );

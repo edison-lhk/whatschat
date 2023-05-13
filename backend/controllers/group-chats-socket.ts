@@ -17,7 +17,6 @@ const createGroupChatRoom = (io: any, socket: any) => {
         const room = new GroupChatRoom({ name, admin: socket.data.userId, users: userIds });
         const savedRoom = await room.save();
         const populatedRoom = await savedRoom.populate('users'); 
-        socket.emit('create-group-chat-room', { room: populatedRoom });
         userIds.forEach(userId => io.to(userId).emit('create-group-chat-room', { room: populatedRoom }));
     };
 };
@@ -54,18 +53,18 @@ const deleteGroupChatRoom = (io: any, socket: any) => {
 };
 
 const updateGroupChatRoomGroupPic = (io: any, socket: any) => {
-    return async ({ roomId }: { roomId: string }) => {
+    return async ({ roomId, groupPic }: { roomId: string, groupPic: string }) => {
         console.log('SOCKET update-group-chat-room-group-pic');
         if (!roomId) return socket.emit('error', { message: 'Please provide room id' });
-        io.to(`group-chat-room: ${roomId}`).emit('update-group-chat-room-group-pic', { roomId });
+        io.to(`group-chat-room: ${roomId}`).emit('update-group-chat-room-group-pic', { roomId, groupPic });
     };
 };
 
 const updateGroupChatRoomWallpaper = (io: any, socket: any) => {
-    return async ({ roomId }: { roomId: string }) => {
+    return async ({ roomId, wallpaper }: { roomId: string, wallpaper: string }) => {
         console.log('SOCKET update-group-chat-room-wallpaper');
         if (!roomId) return socket.emit('error', { message: 'Please provide room id' });
-        io.to(`group-chat-room: ${roomId}`).emit('update-group-chat-room-wallpaper', { roomId });
+        io.to(`group-chat-room: ${roomId}`).emit('update-group-chat-room-wallpaper', { roomId, wallpaper });
     };
 };
 

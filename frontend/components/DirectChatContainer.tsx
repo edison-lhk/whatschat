@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { StyleSheet, View, ImageBackground, ScrollView } from "react-native";
 import DirectChatMessage from "./DirectChatMessage";
+import { DirectChatRoomType, DirectChatRoomMessageType } from "../types/app";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-const DirectChatContainer = ({ user, wallpaper, messages }: { user: any, wallpaper: any, messages: any }) => {
+const DirectChatContainer = ({ roomId, messages }: { roomId: string, messages: DirectChatRoomMessageType[] }) => {
+    const room = useSelector((state: RootState) => state.directChatRooms).find((room: DirectChatRoomType) => room._id === roomId);
+
     return (
         <View style={styles.chatsContainer}>
-            <ImageBackground style={styles.chatBackground} source={ wallpaper ? { uri: wallpaper } : require('../assets/chat-background.jpg') }>
+            <ImageBackground style={styles.chatBackground} source={ room!.wallpaper ? { uri: room!.wallpaper } : require('../assets/chat-background.jpg') }>
                 <ScrollView contentContainerStyle={styles.messageList}>
-                    {messages.map((message: any) => <DirectChatMessage key={message._id} user={user} sender={message.sender} text={message.text} createdAt={message.createdAt} /> )}
+                    {messages.map((message: any) => <DirectChatMessage key={message._id} sender={message.sender} text={message.text} createdAt={message.createdAt} /> )}
                 </ScrollView>
             </ImageBackground>
         </View>

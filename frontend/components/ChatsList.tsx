@@ -2,12 +2,18 @@ import React from "react";
 import { StyleSheet, ScrollView } from "react-native";
 import DirectChatItem from "./DirectChatItem";
 import GroupChatItem from "./GroupChatItem";
+import { UserType, DirectChatRoomType, GroupChatRoomType } from "../types/app";
+import { Socket } from "socket.io-client";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
+ 
+const ChatsList = ({ socket, closeMenuHandler }: { socket: Socket, closeMenuHandler: () => void }) => {
+    const { directChatRooms, groupChatRooms } = useSelector((state: RootState) => state);
 
-const ChatsList = ({ user, socket, directChatRooms, groupChatRooms, closeMenuHandler }: { user: any, socket: any, directChatRooms: any, groupChatRooms: any, closeMenuHandler: () => void }) => {
     return (
         <ScrollView style={styles.listContainer}> 
-            {directChatRooms.map((room: any) => <DirectChatItem key={room._id} room={room} socket={socket} user2={room.users[0]._id !== user._id ? room.users[0] : room.users[1] } closeMenuHandler={closeMenuHandler} />)}
-            {groupChatRooms.map((room: any) => <GroupChatItem key={room._id} id={room._id} user={user} socket={socket} room={room} closeMenuHandler={closeMenuHandler} />)}
+            {directChatRooms.map((room: DirectChatRoomType) => <DirectChatItem key={room._id} id={room._id!} socket={socket} closeMenuHandler={closeMenuHandler} />)}
+            {groupChatRooms.map((room: GroupChatRoomType) => <GroupChatItem key={room._id} id={room._id!} socket={socket} closeMenuHandler={closeMenuHandler} />)}
         </ScrollView>
     );
 };

@@ -6,24 +6,33 @@ import axios from "axios";
 import { BACKEND_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from 'expo-image-picker';
+import { DirectChatRoomType, GroupChatRoomType } from "../types/app";
+import { Socket } from "socket.io-client";
+import { RootState } from "../redux/store";
+import { useSelector, useDispatch } from "react-redux";
+import { updateDirectChatRoomWallpaper } from "../redux/features/directChatRoomsSlice";
 
 const DirectChatRoomDetailsScreen = () => {
     const navigation = useNavigation();
-    const { user, socket, roomId, user2 } = useRoute().params as { user: any, socket: any, roomId: string, user2: any };
+    const { socket, roomId } = useRoute().params as { socket: Socket, roomId: string };
     const [mutualGroups, setMutualGroups] = useState([]);
+    const room = useSelector((state: RootState) => state.directChatRooms).find((room: DirectChatRoomType) => room._id === roomId);
+    const user = useSelector((state: RootState) => state.user);
+    const user2 = room?.users![0]._id === user._id ? room?.users![1] : room?.users![0];
+    const dispatch = useDispatch();
 
     const fetchMutualGroups = async () => {
         try {
             const token = await AsyncStorage.getItem('token');
-            const response = await axios.get(`${BACKEND_URL}/api/users/get-mutual-groups/${user._id}&${user2._id}`, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
+            const response = await axios.get(`${BACKEND_URL}/api/users/get-mutual-groups/${user._id}&${user2!._id}`, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
             setMutualGroups(response.data.rooms);
         } catch(error: any) {
             Alert.alert('Error', error.message, [{ text: 'Ok' }]);
         }
     };
 
-    const displayParticipants = (mutualGroup: any) => {
-        const usernames = mutualGroup.users.map((participant: any) => {
+    const displayParticipants = (mutualGroup: GroupChatRoomType) => {
+        const usernames = mutualGroup!.users!.map((participant: any) => {
             if (participant.username === user.username) {
                 return 'you';
             } else {
@@ -67,9 +76,10 @@ const DirectChatRoomDetailsScreen = () => {
             formData.append('wallpaper', { uri, name, type } as unknown as File);
             const token = await AsyncStorage.getItem('token');
             try {
-                await axios.patch(`${BACKEND_URL}/api/direct-chats/update-wallpaper/${roomId}`, formData, { headers: { Authorization: 'Bearer ' + JSON.parse(token as string), "Content-Type": 'multipart/form-data' } });
-                socket.emit('update-direct-chat-room-wallpaper', { roomId });
-                navigation.navigate('Chats List' as never);
+                const response = await axios.patch(`${BACKEND_URL}/api/direct-chats/update-wallpaper/${roomId}`, formData, { headers: { Authorization: 'Bearer ' + JSON.parse(token as string), "Content-Type": 'multipart/form-data' } });
+                socket.emit('update-direct-chat-room-wallpaper', { roomId, wallpaper: response.data.wallpaper });
+                dispatch(updateDirectChatRoomWallpaper({ roomId: room!._id!, wallpaper: response.data.wallpaper }));
+                navigation.navigate('Direct Chat Room' as never, { roomId } as never);
             } catch(error: any) {
                 Alert.alert('Error', error.response.data.error ? error.response.data.error : error.message, [{ text: 'Ok' }]);
             }
@@ -90,13 +100,13 @@ const DirectChatRoomDetailsScreen = () => {
             </View>
             <ScrollView contentContainerStyle={styles.infoContainer}>
                 <View style={styles.info}>
-                    <Image style={{ width: user2.profilePic ? 130 : 300, height: user2.profilePic ? 130 : 150, borderRadius: 130 / 2 }} source={user2.profilePic ? { uri: user2.profilePic } : require('../assets/profile-pic.png')} />
-                    <View style={[styles.textContainer, { marginTop: user2.profilePic ? 25 : 0 }]}>
-                        <Text style={styles.username}>{ user2.username }</Text>
-                        <Text style={styles.email}>{ user2.email }</Text>
+                    <Image style={{ width: user2!.profilePic ? 130 : 300, height: user2!.profilePic ? 130 : 150, borderRadius: 130 / 2 }} source={user2!.profilePic ? { uri: user2!.profilePic } : require('../assets/profile-pic.png')} />
+                    <View style={[styles.textContainer, { marginTop: user2!.profilePic ? 25 : 0 }]}>
+                        <Text style={styles.username}>{ user2!.username }</Text>
+                        <Text style={styles.email}>{ user2!.email }</Text>
                     </View>
                     <View style={styles.bioContainer}>
-                        <Text style={styles.bio}>{ user2.bio ? user2.bio : 'Available' }</Text>
+                        <Text style={styles.bio}>{ user2!.bio ? user2!.bio : 'Available' }</Text>
                     </View>
                     <TouchableOpacity style={styles.updateWallpaperBtn} onPress={editWallpaper}>
                         <Text style={styles.updateWallpaperBtnText}>Edit Wallpaper</Text>
@@ -106,8 +116,8 @@ const DirectChatRoomDetailsScreen = () => {
                     <View style={styles.mutualGroupContainer}>
                         <Text style={styles.mutualGroupText}>1 Mutual Groups</Text>
                         <View style={styles.mutualGroupList}>
-                            {mutualGroups.map((mutualGroup: any) => (
-                                <TouchableOpacity style={styles.mutualGroup} onPress={() => navigation.navigate('Group Chat Room' as never, { room: mutualGroup } as never)}>
+                            {mutualGroups.map((mutualGroup: GroupChatRoomType) => (
+                                <TouchableOpacity style={styles.mutualGroup} onPress={() => navigation.navigate('Group Chat Room' as never, { roomId: mutualGroup._id } as never)}>
                                     <Image style={styles.mutualGroupProfilePic} source={mutualGroup.groupPic ? mutualGroup.groupPic : require('../assets/profile-pic.png')} />
                                     <View style={styles.mutualGroupTextContainer}>
                                         <Text style={styles.mutualGroupName}>{ mutualGroup.name }</Text>
@@ -188,7 +198,8 @@ const styles = StyleSheet.create({
     },
     updateWallpaperBtnText: {
         fontSize: 16,
-        color: '#009EDC'
+        color: '#009EDC',
+        fontWeight: 'bold'
     },
     mutualGroupContainer: {
         gap: 15,

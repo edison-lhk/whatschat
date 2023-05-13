@@ -56,10 +56,10 @@ const deleteDirectChatRoom = (io: any, socket: any) => {
 };
 
 const updateDirectChatRoomWallpaper = (io: any, socket: any) => {
-    return async ({ roomId }: { roomId: string }) => {
+    return async ({ roomId, wallpaper }: { roomId: string, wallpaper: string }) => {
         console.log('SOCKET update-direct-chat-room-wallpaper');
         if (!roomId) return socket.emit('error', { message: 'Please provide room id' });
-        io.to(`direct-chat-room: ${roomId}`).emit('update-direct-chat-room-wallpaper', { roomId });
+        io.to(`direct-chat-room: ${roomId}`).emit('update-direct-chat-room-wallpaper', { roomId, wallpaper });
     };
 };
 

@@ -4,12 +4,16 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from "axios";
 import { BACKEND_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RootState } from "../redux/store";
+import { useSelector, useDispatch } from 'react-redux';
+import { setUser } from "../redux/features/userSlice";
 
 const LoginScreen = () => {
     const navigation = useNavigation();
-    const { setUser } = useRoute().params as { setUser: React.Dispatch<React.SetStateAction<any>> };
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const user = useSelector((state: RootState) => state.user);
+    const dispatch = useDispatch();
 
     const loginUser = async () => {
         if (!email || !password) {
@@ -18,11 +22,11 @@ const LoginScreen = () => {
         };
         try {
             const response = await axios.post(`${BACKEND_URL}/api/auth/login`, { email, password });
-            await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
             await AsyncStorage.setItem('token', JSON.stringify(response.data.token));
-            setUser(response.data.user);
+            dispatch(setUser(response.data.user));
             setEmail('');
             setPassword('');
+            navigation.navigate('Home' as never);
         } catch(error: any) {
             Alert.alert('Error', error.response.data.error ? error.response.data.error : error.message , [{ text: 'ok' }]);
         }
@@ -33,7 +37,11 @@ const LoginScreen = () => {
     };
 
     useEffect(() => {
-        clearAsyncStorage();
+        if (user.online) {
+            navigation.navigate('Home' as never);
+        } else {
+            clearAsyncStorage();
+        }
     }, []);
 
     return (

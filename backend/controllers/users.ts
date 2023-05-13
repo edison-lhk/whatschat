@@ -10,7 +10,7 @@ const getUserByEmail = asyncHandler(async (req: express.Request, res: express.Re
     if (!email) return sendError(400, 'Please provide user email', next);
     const user = await User.findOne({ email });
     if (!user) return sendError(400, 'Email does not exist', next);
-    res.status(200).json({ success: true, user: { _id: user._id, username: user.username, email: user.email, profilePic: user.profilePic, bio: user.bio } });
+    res.status(200).json({ success: true, user: { _id: user._id, username: user.username, email: user.email, profilePic: user.profilePic, bio: user.bio, online: user.online } });
 });
 
 const getDirectChatRoomsOfUser = asyncHandler(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -23,7 +23,7 @@ const getDirectChatRoomsOfUser = asyncHandler(async (req: express.Request, res: 
 const getGroupChatRoomsOfUser = asyncHandler(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const { userId } = req.params;
     if (!userId) return sendError(400, 'Please provide user id', next);
-    const rooms = await GroupChatRoom.find({ users: { $in: [userId] } }).populate('users');
+    const rooms = await GroupChatRoom.find({ users: { $in: [userId] } }).populate('users').populate('admin');
     res.status(200).json({ success: true, rooms });
 });
 

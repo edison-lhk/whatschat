@@ -12,6 +12,7 @@ import directChatsRouter from './routes/direct-chats';
 import groupChatsRouter from './routes/group-chats';
 import directChatsSocketRouter from './routes/direct-chats-socket';
 import groupChatsSocketRouter from './routes/group-chats-socket';
+import User from './models/User';
 
 // Create backend server
 const app = express();
@@ -40,12 +41,16 @@ app.use('/api/messages', messagesRouter);
 app.use('/api/direct-chats', directChatsRouter);
 app.use('/api/group-chats', groupChatsRouter);
 io.on('connection', socket => {
-    socket.on('login', ({ userId }) => {
+    socket.on('login', async ({ userId }) => {
         socket.data.userId = userId;
         socket.join(userId);
+        await User.updateOne({ _id: userId }, { online: true });
     });
     directChatsSocketRouter(io, socket);
     groupChatsSocketRouter(io, socket);
+    socket.on('disconnect', async () => {
+        await User.updateOne({ _id: socket.data.userId }, { online: false });
+    });
 });
 
 // Error Handler

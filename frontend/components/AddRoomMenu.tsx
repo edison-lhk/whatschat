@@ -6,10 +6,10 @@ import AddGroupChatRoomForm from "./AddGroupChatRoomForm";
 import { MaterialIcons } from '@expo/vector-icons'; 
 import { AntDesign } from '@expo/vector-icons'; 
 
-const AddRoomMenu = ({ user, socket, bottomSheetRef, setDirectChatRooms, setGroupChatRooms, setShowAddRoomMenu }: { user: any, socket: any, bottomSheetRef: React.RefObject<BottomSheet>, setDirectChatRooms: React.Dispatch<React.SetStateAction<any>>, setGroupChatRooms: React.Dispatch<React.SetStateAction<any>>, setShowAddRoomMenu: React.Dispatch<React.SetStateAction<boolean>> }) => {
-    const [renderAddDirectChatRoomForm, setRenderAddDirectChatRoomForm] = useState(false);
-    const [renderAddGroupChatRoomForm, setRenderAddGroupChatRoomForm] = useState(false);
-    const [snapPoints, setSnapPoints] = useState(['40%']);
+const AddRoomMenu = ({ socket, bottomSheetRef, setShowAddRoomMenu }: { socket: any, bottomSheetRef: React.RefObject<BottomSheet>, setShowAddRoomMenu: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    const [renderAddDirectChatRoomForm, setRenderAddDirectChatRoomForm] = useState<boolean>(false);
+    const [renderAddGroupChatRoomForm, setRenderAddGroupChatRoomForm] = useState<boolean>(false);
+    const [snapPoints, setSnapPoints] = useState<string[]>(['40%']);
 
     const closeMenuHandler = () => {
         bottomSheetRef!.current!.close();
@@ -53,9 +53,9 @@ const AddRoomMenu = ({ user, socket, bottomSheetRef, setDirectChatRooms, setGrou
                         </View>
                     </>
                 ) : renderAddDirectChatRoomForm ? (
-                    <AddDirectChatRoomForm user={user} socket={socket} setRenderAddDirectChatRoomForm={setRenderAddDirectChatRoomForm} setSnapPoints={setSnapPoints} closeMenuHandler={closeMenuHandler} />
+                    <AddDirectChatRoomForm socket={socket} setRenderAddDirectChatRoomForm={setRenderAddDirectChatRoomForm} setSnapPoints={setSnapPoints} closeMenuHandler={closeMenuHandler} />
                 ) : (
-                    <AddGroupChatRoomForm user={user} socket={socket} setRenderAddGroupChatRoomForm={setRenderAddGroupChatRoomForm} setSnapPoints={setSnapPoints} closeMenuHandler={closeMenuHandler} />
+                    <AddGroupChatRoomForm socket={socket} setRenderAddGroupChatRoomForm={setRenderAddGroupChatRoomForm} setSnapPoints={setSnapPoints} closeMenuHandler={closeMenuHandler} />
                 )}
             </BottomSheetView>
         </BottomSheet>

@@ -2,30 +2,35 @@ import React from "react";
 import { StyleSheet, View, TouchableOpacity, Text, Image, Platform, StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
+import { GroupChatRoomType, UserType } from "../types/app";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-const GroupChatRoomHeader = ({ username, room }: { username: string, room: any }) => {
+const GroupChatRoomHeader = ({ roomId }: { roomId: string }) => {
     const navigation = useNavigation();
+    const room = useSelector((state: RootState) => state.groupChatRooms).find((room: GroupChatRoomType) => room._id === roomId);
+    const user = useSelector((state: RootState) => state.user);
 
     const displayParticipants = () => {
-        const usernames = room.users.map((user: any) => {
-            if (user.username === username) {
+        const usernames = room!.users!.map((eachUser: UserType) => {
+            if (user.username === eachUser.username) {
                 return 'you';
             } else {
-                return user.username;
+                return eachUser.username;
             }
         });
         return usernames.join(', ');
     };
 
     return (
-        <View style={styles.header}>
+        <View style={[styles.header, { gap: room!.groupPic ? 25 : 15 }]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Ionicons name="chevron-back" size={30} color="#009EDC" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.infoContainer} onPress={() => navigation.navigate('Group Chat Room Details' as never, { room } as never)}>
-                <Image style={styles.profilePic} source={room.groupPic ? room.groupPic : require('../assets/profile-pic.png')} />
+            <TouchableOpacity style={[styles.infoContainer, { gap: room!.groupPic ? 10 : 0 }]} onPress={() => navigation.navigate('Group Chat Room Details' as never, { roomId } as never)}>
+                <Image style={{ height: room!.groupPic ? 45 : 100, width: room!.groupPic ? 45 : 65, top: room!.groupPic ? 0 : 5, borderRadius: 50}} source={room!.groupPic ? { uri: room!.groupPic } : require('../assets/profile-pic.png')} />
                 <View style={styles.textContainer}>
-                    <Text style={styles.groupName}>{ room.name }</Text>
+                    <Text style={styles.groupName}>{ room!.name }</Text>
                     <Text style={styles.participants} numberOfLines={1}>{displayParticipants()}</Text>
                 </View>
             </TouchableOpacity>
@@ -47,11 +52,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '80%',
         height: '100%',
-    },
-    profilePic: {
-        height: 100,
-        width: 65,
-        top: 5
     },
     textContainer: {
         gap: 3,
