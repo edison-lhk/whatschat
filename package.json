@@ -1,0 +1,24 @@
+{
+  "name": "whatschat",
+  "version": "1.0.0",
+  "description": "A cross-platform whatsapp-like mobile chat app that enables real-time communication with live group chats and personal direct messages supported",
+  "main": "index.js",
+  "scripts": {
+    "frontend": "npm start --prefix frontend",
+    "backend": "npm start --prefix backend",
+    "start": "concurrently \"npm run frontend\" \"npm run backend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edison-lhk/whatschat.git"
+  },
+  "author": "Edison Liem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/edison-lhk/whatschat/issues"
+  },
+  "homepage": "https://github.com/edison-lhk/whatschat#readme",
+  "dependencies": {
+    "concurrently": "^8.0.1"
+  }
+}

@@ -43,6 +43,14 @@ const SignupScreen = () => {
         }; 
     };
 
+    const navigateLogin = () => {
+        navigation.navigate('Login' as never);
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+    };
+
     useEffect(() => {
         if (user.online) navigation.navigate('Home' as never);
     });
@@ -66,7 +74,7 @@ const SignupScreen = () => {
                     </View>
                     <View style={styles.loginPromptContainer}>
                         <Text>Already have an account?</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+                        <TouchableOpacity onPress={navigateLogin}>
                             <Text style={styles.loginText}>Login</Text>
                         </TouchableOpacity>
                     </View>

@@ -44,7 +44,6 @@ const AddDirectChatRoomForm = ({ socket, setRenderAddDirectChatRoomForm, setSnap
     useEffect(() => {
         socket.on('create-direct-chat-room', ({ room }: { room: DirectChatRoomType }) => {
             closeMenuHandler();
-            navigation.navigate('Direct Chat Room' as never, { room, user2: room!.users![0]._id !== user._id ? room!.users![0] : room!.users![1] } as never);
         });
     }, []);
 
@@ -61,7 +60,7 @@ const AddDirectChatRoomForm = ({ socket, setRenderAddDirectChatRoomForm, setSnap
             </View>
             {userResult && (
                 <TouchableOpacity style={styles.userResult}>
-                    <Image style={styles.profilePic} source={userResult.profilePic ? userResult.profilePic : require('../assets/profile-pic.png')} />
+                    <Image style={{ width: 60, height: userResult.profilePic ? 60 : 120, top: userResult.profilePic ? 0 : 5, borderRadius: 60 / 2 }} source={userResult.profilePic ? { uri: userResult.profilePic } : require('../assets/profile-pic.png')} />
                     <View style={styles.info}>
                         <Text style={styles.username}>{ userResult.username }</Text>
                         <Text style={styles.bio}>{ userResult.bio ? userResult.bio : 'Available' }</Text>
@@ -131,11 +130,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         gap: 15,
         borderRadius: 10
-    },
-    profilePic: {
-        width: 60,
-        height: 120,
-        top: 5
     },
     info: {
         gap: 3,

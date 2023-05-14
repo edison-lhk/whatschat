@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { StyleSheet, View, TextInput, TouchableOpacity, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, TextInput, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Socket } from "socket.io-client";
+import { useNavigation } from "@react-navigation/native"; 
 
 const MessageBar = ({ socket, roomId, type }: { socket: Socket, roomId: string, type: string }) => {
     const [message, setMessage] = useState('');
     const [messageBarHeight, setMessageBarHeight] = useState(45);
+    const navigation = useNavigation();
 
     const sendMessage = () => {
         if (message) {
@@ -13,6 +15,15 @@ const MessageBar = ({ socket, roomId, type }: { socket: Socket, roomId: string, 
             setMessage('');
         };
     };
+
+    useEffect(() => {
+        socket.on('delete-direct-chat-room', ({ roomId }: { roomId: string }) => {
+            navigation.navigate('Chats List' as never);
+        });
+        socket.on('delete-group-chat-room', ({ roomId }: { roomId: string }) => {
+            navigation.navigate('Chats List' as never);
+        });
+    }, []);
 
     return (
         <View style={[styles.messageBar, { height: messageBarHeight }]}>

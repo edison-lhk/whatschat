@@ -23,18 +23,22 @@ const GroupChatRoomHeader = ({ roomId }: { roomId: string }) => {
     };
 
     return (
-        <View style={[styles.header, { gap: room!.groupPic ? 25 : 15 }]}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Ionicons name="chevron-back" size={30} color="#009EDC" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.infoContainer, { gap: room!.groupPic ? 10 : 0 }]} onPress={() => navigation.navigate('Group Chat Room Details' as never, { roomId } as never)}>
-                <Image style={{ height: room!.groupPic ? 45 : 100, width: room!.groupPic ? 45 : 65, top: room!.groupPic ? 0 : 5, borderRadius: 50}} source={room!.groupPic ? { uri: room!.groupPic } : require('../assets/profile-pic.png')} />
-                <View style={styles.textContainer}>
-                    <Text style={styles.groupName}>{ room!.name }</Text>
-                    <Text style={styles.participants} numberOfLines={1}>{displayParticipants()}</Text>
+        <>
+            {room && (
+                <View style={[styles.header, { gap: room!.groupPic ? 25 : 15 }]}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Ionicons name="chevron-back" size={30} color="#009EDC" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.infoContainer, { gap: room!.groupPic ? 10 : 0 }]} onPress={() => navigation.navigate('Group Chat Room Details' as never, { roomId } as never)}>
+                        <Image style={{ height: room!.groupPic ? 45 : 100, width: room!.groupPic ? 45 : 65, top: room!.groupPic ? 0 : 5, borderRadius: 50}} source={room!.groupPic ? { uri: room!.groupPic } : require('../assets/profile-pic.png')} />
+                        <View style={styles.textContainer}>
+                            <Text style={styles.groupName}>{ room!.name }</Text>
+                            <Text style={styles.participants} numberOfLines={1}>{displayParticipants()}</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
-            </TouchableOpacity>
-        </View>
+            )}
+        </>
     );
 };
 

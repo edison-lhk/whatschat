@@ -12,6 +12,7 @@ export interface DirectChatRoomType {
     users: UserType[] | undefined;
     wallpaper: string | undefined;
     createdAt: string | undefined;
+    messages: DirectChatRoomMessageType[] | undefined;
 };
 
 export interface GroupChatRoomType {
@@ -23,22 +24,23 @@ export interface GroupChatRoomType {
     groupPic: string | undefined;
     wallpaper: string | undefined;
     createdAt: string | undefined;
+    messages: GroupChatRoomMessageType[] | undefined;
 };
 
 export interface DirectChatRoomMessageType {
-    _id: string;
-    roomId: string;
-    sender: UserType;
-    text: string;
-    read: boolean;
-    createdAt: string;
+    _id: string | undefined;
+    roomId: string | undefined;
+    sender: UserType | undefined;
+    text: string | undefined;
+    read: boolean | undefined;
+    createdAt: string | undefined;
 };
 
 export interface GroupChatRoomMessageType {
-    _id: string;
-    roomId: string;
-    sender: UserType;
-    text: string;
-    createdAt: string;
+    _id: string | undefined;
+    roomId: string | undefined;
+    sender: UserType | undefined;
+    text: string | undefined;
+    createdAt: string | undefined;
 };
 

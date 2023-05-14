@@ -12,11 +12,11 @@ import { useSelector } from "react-redux";
 
 const DirectChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: Socket, closeMenuHandler: () => void }) => {
     const navigation = useNavigation();
-    const [latestMessage, setLatestMessage] = useState<string>('');
-    const [latestMessageTime, setLatestMessageTime] = useState<string>('');
+    const [latestMessage, setLatestMessage] = useState<any>('');
     const room = useSelector((state: RootState) => state.directChatRooms).find((room: DirectChatRoomType) => room._id === id);
     const user = useSelector((state: RootState) => state.user);
     const user2 = room?.users![0]._id === user._id ? room?.users![1] : room?.users![0]
+    const unread = room?.messages?.filter((message: DirectChatRoomMessageType) => !message.read).length;
 
     const onPress = () => {
         navigation.navigate('Direct Chat Room' as never, { roomId: id } as never);
@@ -26,8 +26,7 @@ const DirectChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: 
     const fetchLatestMessage = async () => {
         const token = await AsyncStorage.getItem('token');
         const response = await axios.get(`${BACKEND_URL}/api/messages/direct-chat/latest/${room!._id}`, { headers: { Authorization: 'Bearer ' + JSON.parse(token!) } });
-        setLatestMessage(response.data.message.text);
-        setLatestMessageTime(moment(response.data.message.createdAt).format('hh:mm a'));
+        setLatestMessage(response.data.message);
     };
 
     useEffect(() => {
@@ -35,8 +34,10 @@ const DirectChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: 
         socket.on('send-direct-chat', async ({ newMessage }: { newMessage: DirectChatRoomMessageType }) => {
             const prevMessages = await AsyncStorage.getItem(`direct-chat-room/${room!._id}`);
             if (prevMessages) await AsyncStorage.setItem(`direct-chat-room/${room!._id}`, JSON.stringify([...JSON.parse(prevMessages), newMessage]));
-            setLatestMessage(newMessage.text);
-            setLatestMessageTime(moment(newMessage.createdAt).format('hh:mm a'));
+            setLatestMessage(newMessage);
+        });
+        socket.on('read-direct-chat-room-message', ({ roomId, messageId }: { roomId: string, messageId: string }) => {
+            fetchLatestMessage();
         });
     }, []);
 
@@ -44,16 +45,27 @@ const DirectChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: 
         <TouchableOpacity style={styles.container} onPress={onPress}>
             <Image style={{ width: 65, height: user2!.profilePic ? 65 : 150, borderRadius: 50, padding: 0, top: user2!.profilePic ? -7 : 0 }} source={user2!.profilePic ? { uri: user2!.profilePic } : require('../assets/profile-pic.png')} />
             <View style={styles.infoContainer}>
-                <View style={[styles.textContainer, { justifyContent: latestMessage ? 'flex-start' : 'center' }]}>
+                <View style={[styles.textContainer]}>
                     <Text style={styles.username} numberOfLines={1}>{ user2!.username }</Text>
-                    <Text style={styles.message} numberOfLines={1}>{ latestMessage }</Text>
+                    {latestMessage ? (
+                        <View style={styles.messageContainer}>
+                            {latestMessage.sender._id === user._id && <Text style={{ color: latestMessage.read ? '#009EDC' : '#999997' , fontSize: 16 }}>✓</Text>}
+                            <Text style={styles.message} numberOfLines={1}>{ latestMessage.text }</Text>
+                        </View>
+                    ) : (
+                        <Text style={styles.message} numberOfLines={1}>{ user2!.bio ? user2!.bio : 'Available' }</Text>
+                    )}
                 </View>
-                <View style={styles.metadataContainer}>
-                    <Text style={styles.time}>{ latestMessageTime }</Text>
-                    <View style={styles.unreadNumberContainer}>
-                        <Text style={styles.unreadNumber}>5</Text>
+                {latestMessage && (
+                    <View style={styles.metadataContainer}>
+                        <Text style={styles.time}>{ moment(latestMessage.createdAt).format('hh:mm a') }</Text>
+                        { unread! > 0 && (
+                            <View style={styles.unreadNumberContainer}>
+                                <Text style={styles.unreadNumber}>{ unread }</Text>
+                            </View>
+                        )}
                     </View>
-                </View>
+                )}
             </View>
         </TouchableOpacity>
     );
@@ -81,11 +93,17 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         gap: 7,
-        width: '80%'
+        width: '80%',
+        justifyContent: 'flex-start'
     },
     username: {
         fontWeight: 'bold',
         fontSize: 19
+    },
+    messageContainer: {
+        flexDirection: 'row',
+        gap: 5,
+        alignItems: 'center'
     },
     message: {
         color: '#999997',

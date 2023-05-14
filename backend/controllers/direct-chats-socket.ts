@@ -32,8 +32,9 @@ const sendDirectChat = (io: any, socket: any) => {
         console.log('SOCKET send-direct-chat');
         if (!roomId || !message) return socket.emit('error', { message: 'Please provide all fields' });
         const directChatMessage = new DirectChatMessage({ roomId, sender: socket.data.userId, text: message });
-        await directChatMessage.save();
-        io.to(`direct-chat-room: ${roomId}`).emit('send-direct-chat', { newMessage: directChatMessage });
+        const savedMessage = await directChatMessage.save();
+        const populatedMessage = await savedMessage.populate('sender');
+        io.to(`direct-chat-room: ${roomId}`).emit('send-direct-chat', { roomId, newMessage: populatedMessage });
     };
 };
 
@@ -63,4 +64,13 @@ const updateDirectChatRoomWallpaper = (io: any, socket: any) => {
     };
 };
 
-export { joinDirectChatRooms, createDirectChatRoom, sendDirectChat, quitDirectChatRoom, deleteDirectChatRoom, updateDirectChatRoomWallpaper };
+const readDirectChatRoomMessage = (io: any, socket: any) => {
+    return async ({ roomId, messageId }: { roomId: string, messageId: string }) => {
+        console.log('SOCKET read-direct-chat-room-message');
+        if (!roomId || !messageId) return socket.emit('error', { message: 'Please provide all fields' });
+        await DirectChatMessage.updateOne({ _id: messageId }, { read: true });
+        io.to(`direct-chat-room: ${roomId}`).emit('read-direct-chat-room-message', { roomId, messageId });
+    };
+};
+
+export { joinDirectChatRooms, createDirectChatRoom, sendDirectChat, quitDirectChatRoom, deleteDirectChatRoom, updateDirectChatRoomWallpaper, readDirectChatRoomMessage };

@@ -36,6 +36,12 @@ const LoginScreen = () => {
         await AsyncStorage.clear();  
     };
 
+    const navigateSignup = () => {
+        navigation.navigate('Signup' as never);
+        setEmail('');
+        setPassword('');
+    };
+
     useEffect(() => {
         if (user.online) {
             navigation.navigate('Home' as never);
@@ -61,7 +67,7 @@ const LoginScreen = () => {
                     </View>
                     <View style={styles.signupPromptContainer}>
                         <Text>Don't have an account?</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Signup' as never)}>
+                        <TouchableOpacity onPress={navigateSignup}>
                             <Text style={styles.signupText}>Signup</Text>
                         </TouchableOpacity>
                     </View>

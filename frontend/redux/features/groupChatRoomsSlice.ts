@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { GroupChatRoomType } from '../../types/app';
+import { GroupChatRoomType, GroupChatRoomMessageType } from '../../types/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState: GroupChatRoomType[] = [];
@@ -14,7 +14,7 @@ export const groupChatRoomsSlice = createSlice({
           return action.payload;
       },
       createGroupChatRoom: (state, action: PayloadAction<GroupChatRoomType>) => {
-          const newGroupChatRooms = [ ...state, action.payload ];
+          const newGroupChatRooms = [ ...state, { ...action.payload, messages: [] } ];
           AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
           return newGroupChatRooms;
       },
@@ -33,9 +33,35 @@ export const groupChatRoomsSlice = createSlice({
           AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
           return newGroupChatRooms;
       },
+      updateGroupChatRoomOnlineStatus: (state: GroupChatRoomType[], action: PayloadAction<{ roomId: string, userId: string, status: boolean }>) => {
+          const { roomId, userId, status } = action.payload;
+          return state.map(room => {
+              if (room._id === roomId) {
+                  const users = room.users?.map(user => user._id === userId ? { ...user, online: status } : user);
+                  return { ...room, users };
+              } else {
+                  return room;
+              };
+          });
+      },
+      setGroupChatRoomMessages: (state: GroupChatRoomType[], action: PayloadAction<{ roomId: string, messages: GroupChatRoomMessageType[] }>) => {
+        const { roomId, messages } = action.payload;
+        const newGroupChatRooms = state.map(room => room._id === roomId ? { ...room, messages: messages ? messages : [] } : room);
+        AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
+        AsyncStorage.setItem(`group-chat-room/${roomId}`, JSON.stringify(messages));
+        return newGroupChatRooms;
+    },
+    addGroupChatRoomMessage: (state: GroupChatRoomType[], action: PayloadAction<{ roomId: string, message: GroupChatRoomMessageType }>) => {
+        const { roomId, message } = action.payload;
+        const newGroupChatRooms = state.map(room => room._id === roomId ? { ...room, messages: [...room.messages!, message] as GroupChatRoomMessageType[] } : room);
+        const prevMessages = state.find(room => room._id === roomId)?.messages;
+        AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
+        AsyncStorage.setItem(`group-chat-room/${roomId}`, JSON.stringify([ ...prevMessages!, message ]));
+        return newGroupChatRooms;
+    }
   },
 });
 
-export const { setGroupChatRooms, createGroupChatRoom, deleteGroupChatRoom, updateGroupChatRoomGroupPic, updateGroupChatRoomWallpaper } = groupChatRoomsSlice.actions;
+export const { setGroupChatRooms, createGroupChatRoom, deleteGroupChatRoom, updateGroupChatRoomGroupPic, updateGroupChatRoomWallpaper, updateGroupChatRoomOnlineStatus, setGroupChatRoomMessages, addGroupChatRoomMessage } = groupChatRoomsSlice.actions;
 
 export default groupChatRoomsSlice.reducer;

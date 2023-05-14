@@ -53,17 +53,16 @@ const AddGroupChatRoomForm = ({ socket, setRenderAddGroupChatRoomForm, setSnapPo
     }; 
 
     const createRoom = () => {
-        if (groupNameInput) {
+        if (groupNameInput && users.length > 1) {
             socket.emit('create-group-chat-room', { name: groupNameInput, userIds: users.map(user => user._id) });
         } else {
-            Alert.alert('Error', 'Please provide a group name', [{ text: 'Ok' }]);
+            Alert.alert('Error', 'Please provide a group name & participants', [{ text: 'Ok' }]);
         };
     };
 
     useEffect(() => {
         socket.on('create-group-chat-room', ({ room }: { room: GroupChatRoomType }) => {
             closeMenuHandler();
-            navigation.navigate('Group Chat Room' as never, { roomId: room._id } as never);
         });
     }, []);
 
@@ -84,7 +83,7 @@ const AddGroupChatRoomForm = ({ socket, setRenderAddGroupChatRoomForm, setSnapPo
             </View>
             {userResult && (
                 <TouchableOpacity style={styles.userResult}>
-                    <Image style={styles.profilePic} source={userResult.profilePic ? userResult.profilePic : require('../assets/profile-pic.png')} />
+                    <Image style={{ width: 60, height: userResult.profilePic ? 60 : 120, top: userResult.profilePic ? 0 : 5, borderRadius: 60 / 2 }} source={userResult.profilePic ? { uri: userResult.profilePic } : require('../assets/profile-pic.png')} />
                     <View style={styles.info}>
                         <Text style={styles.username}>{ userResult.username }</Text>
                         <Text style={styles.bio}>{ userResult.bio ? userResult.bio : 'Available' }</Text>
@@ -97,7 +96,7 @@ const AddGroupChatRoomForm = ({ socket, setRenderAddGroupChatRoomForm, setSnapPo
             <ScrollView style={styles.usersList}>
                 { users.filter(eachUser => eachUser._id !== user._id).map(user => (
                     <TouchableOpacity style={styles.user}>
-                        <Image style={styles.profilePic} source={user.profilePic ? user.profilePic : require('../assets/profile-pic.png')} />
+                        <Image style={{ width: 60, height: user.profilePic ? 60 : 120, top: user.profilePic ? 0 : 5, borderRadius: 60 / 2 }} source={user.profilePic ? { uri: user.profilePic } : require('../assets/profile-pic.png')} />
                         <View style={styles.info}>
                             <Text style={styles.username}>{ user.username }</Text>
                             <Text style={styles.bio}>{ user.bio ? user.bio : 'Available' }</Text>
@@ -172,11 +171,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         gap: 15,
         borderRadius: 10
-    },
-    profilePic: {
-        width: 60,
-        height: 120,
-        top: 5
     },
     info: {
         gap: 3,

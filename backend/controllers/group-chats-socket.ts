@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import GroupChatRoom from '../models/GroupChatRoom';
 import GroupChatMessage from '../models/GroupChatMessage';
 
@@ -16,7 +15,7 @@ const createGroupChatRoom = (io: any, socket: any) => {
         if (!name || !userIds) return socket.emit('error', { message: 'Please provide all fields' });
         const room = new GroupChatRoom({ name, admin: socket.data.userId, users: userIds });
         const savedRoom = await room.save();
-        const populatedRoom = await savedRoom.populate('users'); 
+        const populatedRoom = await (await savedRoom.populate('users')).populate('admin'); 
         userIds.forEach(userId => io.to(userId).emit('create-group-chat-room', { room: populatedRoom }));
     };
 };
@@ -28,7 +27,7 @@ const sendGroupChat = (io: any, socket: any) => {
         const groupChatMessage = new GroupChatMessage({ roomId, sender: socket.data.userId, text: message });
         const savedMessage = await groupChatMessage.save();
         const populatedMessage = await savedMessage.populate('sender');
-        io.to(`group-chat-room: ${roomId}`).emit('send-group-chat', { newMessage: groupChatMessage });
+        io.to(`group-chat-room: ${roomId}`).emit('send-group-chat', { roomId, newMessage: populatedMessage });
     };
 };
 

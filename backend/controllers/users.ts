@@ -38,8 +38,8 @@ const getMutualGroupsofUsers = asyncHandler(async (req: express.Request, res: ex
 const updateProfilePic = asyncHandler(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const { userId } = req.params;
     if (!req.file || !userId) return sendError(400, 'Please provide all fields', next);
-    const user = await User.findOneAndUpdate({ _id: userId }, { profilePic: `${process.env.BACKEND_URL}/uploads/${req.file.originalname}` });
-    res.status(200).json({ success: true, message: "User's profile pic has successfully updated", profilePic: user?.profilePic });
+    await User.updateOne({ _id: userId }, { profilePic: `${process.env.BACKEND_URL}/uploads/${req.file.originalname}` });
+    res.status(200).json({ success: true, message: "User's profile pic has successfully updated", profilePic: `${process.env.BACKEND_URL}/uploads/${req.file.originalname}` });
 });
 
 const updateUsername = asyncHandler(async (req: express.Request, res: express.Response, next: express.NextFunction) => {

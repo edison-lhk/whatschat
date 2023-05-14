@@ -1,21 +1,28 @@
 import React from "react";
-import { StyleSheet, View, ImageBackground, ScrollView } from "react-native";
+import { StyleSheet, View, ImageBackground, ScrollView, Pressable } from "react-native";
 import DirectChatMessage from "./DirectChatMessage";
 import { DirectChatRoomType, DirectChatRoomMessageType } from "../types/app";
 import { RootState } from "../redux/store";
 import { useSelector } from "react-redux";
+import { Socket } from "socket.io-client";
 
-const DirectChatContainer = ({ roomId, messages }: { roomId: string, messages: DirectChatRoomMessageType[] }) => {
+const DirectChatContainer = ({ roomId, socket, messages }: { roomId: string, socket: Socket, messages: DirectChatRoomMessageType[] }) => {
     const room = useSelector((state: RootState) => state.directChatRooms).find((room: DirectChatRoomType) => room._id === roomId);
 
     return (
-        <View style={styles.chatsContainer}>
-            <ImageBackground style={styles.chatBackground} source={ room!.wallpaper ? { uri: room!.wallpaper } : require('../assets/chat-background.jpg') }>
-                <ScrollView contentContainerStyle={styles.messageList}>
-                    {messages.map((message: any) => <DirectChatMessage key={message._id} sender={message.sender} text={message.text} createdAt={message.createdAt} /> )}
-                </ScrollView>
-            </ImageBackground>
-        </View>
+        <>
+            {room && (
+                <View style={styles.chatsContainer}>
+                    <ImageBackground style={styles.chatBackground} source={ room!.wallpaper ? { uri: room!.wallpaper } : require('../assets/chat-background.jpg') }>
+                        <ScrollView contentContainerStyle={styles.messageList}>
+                            <Pressable>
+                                {messages.map((message: any) => <DirectChatMessage key={message._id} roomId={roomId} socket={socket} message={message}  /> )}
+                            </Pressable>
+                        </ScrollView>
+                    </ImageBackground>
+                </View>
+            )}
+        </>
     );
 };
 
@@ -28,10 +35,11 @@ const styles = StyleSheet.create({
         height: '100%'
     },
     messageList: {
-        flex: 1,
+        flexGrow: 1,
         paddingHorizontal: 15,
         justifyContent: 'flex-end',
-        paddingBottom: 10
+        paddingBottom: 10,
+        paddingVertical: 20
     }
 });
 

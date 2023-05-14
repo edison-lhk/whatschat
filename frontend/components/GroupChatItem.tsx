@@ -5,7 +5,7 @@ import moment from "moment";
 import axios from "axios";
 import { BACKEND_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GroupChatRoomMessageType, GroupChatRoomType } from "../types/app";
+import { GroupChatRoomMessageType, GroupChatRoomType, UserType } from "../types/app";
 import { Socket } from "socket.io-client";
 import { RootState } from "../redux/store";
 import { useSelector } from "react-redux";
@@ -30,11 +30,22 @@ const GroupChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: S
     };
 
     const formatLatestMessage = (message: GroupChatRoomMessageType) => {
-        if (message.sender.username === user.username) {
+        if (message!.sender!.username === user.username) {
             return `you: ${message.text}`;
         } else {
-            return `${message.sender.username}: ${message.text}`;
+            return `${message!.sender!.username}: ${message.text}`;
         };
+    };
+
+    const displayParticipants = () => {
+        const usernames = room!.users!.map((eachUser: UserType) => {
+            if (user.username === eachUser.username) {
+                return 'you';
+            } else {
+                return eachUser.username;
+            }
+        });
+        return usernames.join(', ');
     };
 
     useEffect(() => {
@@ -42,7 +53,7 @@ const GroupChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: S
         socket.on('send-group-chat', async ({ newMessage }: { newMessage: GroupChatRoomMessageType }) => {
             const prevMessages = await AsyncStorage.getItem(`group-chat-room/${id}`);
             if (prevMessages) await AsyncStorage.setItem(`group-chat-room/${id}`, JSON.stringify([...JSON.parse(prevMessages), newMessage]));
-            setLatestMessage(newMessage.text);
+            setLatestMessage(newMessage!.text!);
             setLatestMessageTime(moment(newMessage.createdAt).format('hh:mm a'));
         });
     }, []);
@@ -51,15 +62,17 @@ const GroupChatItem = ({ id, socket, closeMenuHandler }: { id: string, socket: S
         <TouchableOpacity style={styles.container} onPress={onPress}>
             <Image style={{ width: 65, height: room!.groupPic ? 65 : 150, borderRadius: 50, padding: 0, top: room!.groupPic ? -7 : 0 }} source={room!.groupPic ? { uri: room!.groupPic } : require('../assets/profile-pic.png')} />
             <View style={styles.infoContainer}>
-                <View style={[styles.textContainer, { justifyContent: latestMessage ? 'flex-start' : 'center' }]}>
+                <View style={styles.textContainer}>
                     <Text style={styles.groupName} numberOfLines={1}>{ room!.name }</Text>
-                    <Text style={styles.message} numberOfLines={1} >{ latestMessage }</Text>
+                    <Text style={styles.message} numberOfLines={1} >{ latestMessage ? latestMessage : displayParticipants() }</Text>
                 </View>
                 <View style={styles.metadataContainer}>
                     <Text style={styles.time}>{ latestMessageTime }</Text>
-                    <View style={styles.unreadNumberContainer}>
-                        <Text style={styles.unreadNumber}>324</Text>
-                    </View>
+                    {room?.messages?.length! > 0 && (
+                        <View style={styles.unreadNumberContainer}>
+                            <Text style={styles.unreadNumber}>{ room?.messages?.length }</Text>
+                        </View>
+                    )}
                 </View>
             </View>
         </TouchableOpacity>
@@ -94,7 +107,8 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         gap: 7,
-        width: '80%'
+        width: '80%',
+        justifyContent: 'flex-start'
     },
     groupName: {
         fontWeight: 'bold',

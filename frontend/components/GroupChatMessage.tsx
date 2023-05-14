@@ -2,8 +2,12 @@ import React from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import moment from 'moment';
 import { UserType } from "../types/app";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-const GroupChatMessage = ({ user, sender, text, createdAt }: { user: UserType, sender: UserType, text: string, createdAt: string }) => {
+const GroupChatMessage = ({ sender, text, createdAt }: { sender: UserType, text: string, createdAt: string }) => {
+    const user = useSelector((state: RootState) => state.user);
+
     return (
         <>
             {user._id !== sender._id ? (
@@ -31,6 +35,7 @@ const GroupChatMessage = ({ user, sender, text, createdAt }: { user: UserType, s
 
 const styles = StyleSheet.create({
     messageReceived: {
+        minHeight: 60,
         width: '80%',
         flexDirection: 'row',
         alignItems: 'center',
@@ -39,7 +44,6 @@ const styles = StyleSheet.create({
         marginVertical: 5,
     },
     infoContainer: {
-        minHeight: 40,
         borderRadius: 12,
         paddingTop: 5,
         paddingBottom: 10,
@@ -56,6 +60,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        gap: 10
     },
     username: {
         color: '#999997'
@@ -64,15 +69,16 @@ const styles = StyleSheet.create({
         width: '70%',
         minHeight: 40,
         borderRadius: 12,
-        paddingVertical: 5,
+        paddingVertical: 10,
         paddingHorizontal: 15,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginVertical: 5
+        marginVertical: 5,
     },
     text: {
-        fontSize: 16
+        fontSize: 16,
+        width: '70%'
     },
     time: {
         fontSize: 13,

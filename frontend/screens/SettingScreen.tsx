@@ -46,7 +46,6 @@ const SettingScreen = () => {
                 const response = await axios.patch(`${BACKEND_URL}/api/users/update-profile-pic/${user._id}`, formData, { headers: { Authorization: 'Bearer ' + JSON.parse(token as string), "Content-Type": 'multipart/form-data' } });
                 setProfilePic(response.data.profilePic);
                 dispatch(updateProfilePic(response.data.profilePic));
-                console.log(user);
             } catch(error: any) {
                 Alert.alert('Error', error.response.data.error ? error.response.data.error : error.message, [{ text: 'Ok' }]);
             }
@@ -91,6 +90,7 @@ const SettingScreen = () => {
     };
 
     const logout = async () => {
+        socket.emit('offline-notification');
         dispatch(logoutUser());
         socket.disconnect();
         navigation.navigate('Login' as never);
