@@ -60,7 +60,7 @@ const LoginScreen = () => {
                 <KeyboardAvoidingView style={styles.loginFormContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height' }>
                     <View style={styles.loginForm}>
                         <TextInput style={styles.input} value={email} onChangeText={text => setEmail(text)} placeholder="Email" placeholderTextColor='#999997' keyboardType="email-address" autoCapitalize='none' autoComplete="off" autoCorrect={false} />
-                        <TextInput style={styles.input} value={password} onChangeText={text => setPassword(text)} placeholder="Password" placeholderTextColor='#999997' autoComplete="off" autoCapitalize='none' autoCorrect={false} secureTextEntry={true} />
+                        <TextInput style={styles.input} value={password} onChangeText={text => setPassword(text)} placeholder="Password" placeholderTextColor='#999997' autoComplete="off" autoCapitalize='none' autoCorrect={false} secureTextEntry={true} textContentType="oneTimeCode" />
                         <TouchableOpacity style={styles.loginBtn} onPress={loginUser}>
                             <Text style={styles.loginBtnText}>LOGIN</Text>
                         </TouchableOpacity> 

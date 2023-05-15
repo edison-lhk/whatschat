@@ -14,9 +14,13 @@ export const groupChatRoomsSlice = createSlice({
           return action.payload;
       },
       createGroupChatRoom: (state, action: PayloadAction<GroupChatRoomType>) => {
-          const newGroupChatRooms = [ ...state, { ...action.payload, messages: [] } ];
-          AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
-          return newGroupChatRooms;
+        if (state.find(room => room._id === action.payload._id)) {
+            return state;
+        } else {
+            const newGroupChatRooms = [ ...state, { ...action.payload, messages: [] } ];
+            AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
+            return newGroupChatRooms;
+        }
       },
       deleteGroupChatRoom: (state, action: PayloadAction<string>) => {
           const newGroupChatRooms = state.filter((room: GroupChatRoomType) => room._id !== action.payload);
@@ -53,11 +57,15 @@ export const groupChatRoomsSlice = createSlice({
     },
     addGroupChatRoomMessage: (state: GroupChatRoomType[], action: PayloadAction<{ roomId: string, message: GroupChatRoomMessageType }>) => {
         const { roomId, message } = action.payload;
-        const newGroupChatRooms = state.map(room => room._id === roomId ? { ...room, messages: [...room.messages!, message] as GroupChatRoomMessageType[] } : room);
-        const prevMessages = state.find(room => room._id === roomId)?.messages;
-        AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
-        AsyncStorage.setItem(`group-chat-room/${roomId}`, JSON.stringify([ ...prevMessages!, message ]));
-        return newGroupChatRooms;
+        if (state.find(room => room._id === roomId)!.messages?.find(eachMessage => eachMessage._id === message._id)) {
+            return state;
+        }  else {
+            const newGroupChatRooms = state.map(room => room._id === roomId ? { ...room, messages: [...room.messages!, message] as GroupChatRoomMessageType[] } : room);
+            const prevMessages = state.find(room => room._id === roomId)?.messages;
+            AsyncStorage.setItem('group-chat-rooms', JSON.stringify(newGroupChatRooms));
+            AsyncStorage.setItem(`group-chat-room/${roomId}`, JSON.stringify([ ...prevMessages!, message ]));
+            return newGroupChatRooms;
+        }
     }
   },
 });

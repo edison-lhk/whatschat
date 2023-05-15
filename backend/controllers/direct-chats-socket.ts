@@ -7,7 +7,10 @@ const joinDirectChatRooms = (socket: any) => {
     return ({ roomIds }: { roomIds: string[] }) => {
         console.log('SOCKET join-direct-chat-rooms');
         if (!roomIds) return socket.emit('error', { message: 'Please provide room ids' });
-        roomIds.forEach((roomId: string) => socket.join(`direct-chat-room: ${roomId}`));
+        roomIds.forEach((roomId: string) => {
+            socket.join(`direct-chat-room: ${roomId}`);
+            socket.broadcast.to(`direct-chat-room: ${roomId}`).emit('online-notification', { roomId, userId: socket.data.userId, type: 'direct-chat-room' });
+        });
     };
 };
 

@@ -66,8 +66,8 @@ const SignupScreen = () => {
                     <View style={styles.signupForm}>
                         <TextInput style={styles.input} value={username} onChangeText={text => setUsername(text)} placeholder="Username" placeholderTextColor='#999997' autoCapitalize='none' autoComplete="off" autoCorrect={false} />
                         <TextInput style={styles.input} value={email} onChangeText={text => setEmail(text)} placeholder="Email" placeholderTextColor='#999997' keyboardType="email-address" autoCapitalize='none' autoComplete="off" autoCorrect={false} />
-                        <TextInput style={styles.input} value={password} onChangeText={text => setPassword(text)} placeholder="Password" placeholderTextColor='#999997' autoComplete="off" autoCapitalize='none' autoCorrect={false} secureTextEntry={true} />
-                        <TextInput style={styles.input} value={confirmPassword} onChangeText={text => setConfirmPassword(text)} placeholder="Confirm Password" placeholderTextColor='#999997' autoCapitalize='none' autoComplete="off" autoCorrect={false} secureTextEntry={true} />
+                        <TextInput style={styles.input} value={password} onChangeText={text => setPassword(text)} placeholder="Password" placeholderTextColor='#999997' autoComplete="off" autoCapitalize='none' autoCorrect={false} secureTextEntry={true} textContentType="oneTimeCode" />
+                        <TextInput style={styles.input} value={confirmPassword} onChangeText={text => setConfirmPassword(text)} placeholder="Confirm Password" placeholderTextColor='#999997' autoCapitalize='none' autoComplete="off" autoCorrect={false} secureTextEntry={true} textContentType="oneTimeCode" />
                         <TouchableOpacity style={styles.signupBtn} onPress={signupUser}>
                             <Text style={styles.signupBtnText}>SIGN UP</Text>
                         </TouchableOpacity> 

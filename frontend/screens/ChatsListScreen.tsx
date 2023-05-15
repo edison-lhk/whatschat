@@ -96,9 +96,10 @@ const ChatsListScreen = () => {
     };
 
     useEffect(() => {
-        fetchAllDirectChatRooms();
-        fetchAllGroupChatRooms();
-        if (user.online) socket.emit('online-notification');
+        socket.on('login', () => {
+            fetchAllDirectChatRooms();
+            fetchAllGroupChatRooms();
+        });
         socket.on('error', ({ message }: { message: string }) => {
             Alert.alert('Error', message, [{ text: 'Ok' }]);
         });

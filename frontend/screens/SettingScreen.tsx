@@ -90,10 +90,10 @@ const SettingScreen = () => {
     };
 
     const logout = async () => {
-        socket.emit('offline-notification');
         dispatch(logoutUser());
         socket.disconnect();
         navigation.navigate('Login' as never);
+        await AsyncStorage.clear();
     };
 
     return (

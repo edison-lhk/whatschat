@@ -14,9 +14,13 @@ export const directChatRoomsSlice = createSlice({
             return action.payload;
         },
         createDirectChatRoom: (state, action: PayloadAction<DirectChatRoomType>) => {
-            const newDirectChatRooms = [ ...state, { ...action.payload, messages: [] } ];
-            AsyncStorage.setItem('direct-chat-rooms', JSON.stringify(newDirectChatRooms));
-            return newDirectChatRooms;
+            if (state.find(room => room._id === action.payload._id)) {
+                return state;
+            } else {
+                const newDirectChatRooms = [ ...state, { ...action.payload, messages: [] } ];
+                AsyncStorage.setItem('direct-chat-rooms', JSON.stringify(newDirectChatRooms));
+                return newDirectChatRooms;
+            }
         },
         deleteDirectChatRoom: (state, action: PayloadAction<string>) => {
             const newDirectChatRooms = state.filter((room: DirectChatRoomType) => room._id !== action.payload);
@@ -50,11 +54,15 @@ export const directChatRoomsSlice = createSlice({
         },
         addDirectChatRoomMessage: (state: DirectChatRoomType[], action: PayloadAction<{ roomId: string, message: DirectChatRoomMessageType }>) => {
             const { roomId, message } = action.payload;
-            const newDirectChatRooms = state.map(room => room._id === roomId ? { ...room, messages: [...room.messages!, message] as DirectChatRoomMessageType[] } : room);
-            const prevMessages = state.find(room => room._id === roomId)?.messages;
-            AsyncStorage.setItem('direct-chat-rooms', JSON.stringify(newDirectChatRooms));
-            AsyncStorage.setItem(`direct-chat-room/${roomId}`, JSON.stringify([ ...prevMessages!, message ]));
-            return newDirectChatRooms;
+            if (state.find(room => room._id === roomId)!.messages?.find(eachMessage => eachMessage._id === message._id)) {
+                return state;
+            }  else {
+                const newDirectChatRooms = state.map(room => room._id === roomId ? { ...room, messages: [...room.messages!, message] as DirectChatRoomMessageType[] } : room);
+                const prevMessages = state.find(room => room._id === roomId)?.messages;
+                AsyncStorage.setItem('direct-chat-rooms', JSON.stringify(newDirectChatRooms));
+                AsyncStorage.setItem(`direct-chat-room/${roomId}`, JSON.stringify([ ...prevMessages!, message ]));
+                return newDirectChatRooms;
+            }
         },
         readDirectChatRoomMessage: (state: DirectChatRoomType[], action: PayloadAction<{ roomId: string, messageId: string }>) => {
             const { roomId, messageId } = action.payload;

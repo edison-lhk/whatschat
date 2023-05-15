@@ -8,7 +8,8 @@ import { DirectChatRoomMessageType } from "../types/app";
 import { Socket } from "socket.io-client";
 import { RootState } from "../redux/store";
 import { useSelector, useDispatch } from "react-redux";
-import { updateDirectChatRoomWallpaper, addDirectChatRoomMessage } from "../redux/features/directChatRoomsSlice";
+import { updateDirectChatRoomWallpaper, addDirectChatRoomMessage, updateDirectChatRoomOnlineStatus } from "../redux/features/directChatRoomsSlice";
+import { updateGroupChatRoomOnlineStatus } from "../redux/features/groupChatRoomsSlice";
 
 const DirectChatRoomScreen = () => {
     const { socket, roomId } = useRoute().params as { socket: Socket, roomId: string };
@@ -24,6 +25,20 @@ const DirectChatRoomScreen = () => {
         });
         socket.on('update-direct-chat-room-wallpaper', async ({ roomId, wallpaper }: { roomId: string, wallpaper: string }) => {
             dispatch(updateDirectChatRoomWallpaper({ roomId, wallpaper }));
+        });
+        socket.on('online-notification', ({ roomId, userId, type }: { roomId: string, userId: string, type: string }) => {
+            if (type === 'direct-chat-room') {
+                dispatch(updateDirectChatRoomOnlineStatus({ roomId, userId, status: true }));
+            } else {
+                dispatch(updateGroupChatRoomOnlineStatus({ roomId, userId, status: true }));
+            }
+        });
+        socket.on('offline-notification', ({ roomId, userId, type }: { roomId: string, userId: string, type: string }) => {
+            if (type === 'direct-chat-room') {
+                dispatch(updateDirectChatRoomOnlineStatus({ roomId, userId, status: false }));
+            } else {
+                dispatch(updateGroupChatRoomOnlineStatus({ roomId, userId, status: false }));
+            }
         });
     }, []);
 

@@ -23,7 +23,7 @@ const DirectChatRoomHeader = ({ roomId }: { roomId: string }) => {
                         <Image style={{ height: user2!.profilePic ? 45 : 100, width: user2!.profilePic ? 45 : 65, top: user2!.profilePic ? 0 : 5, borderRadius: 50}} source={user2!.profilePic ? { uri: user2!.profilePic } : require('../assets/profile-pic.png')} />
                         <View style={styles.textContainer}>
                             <Text style={styles.username}>{ user2!.username }</Text>
-                            <Text style={styles.status}>{ user2!.online ? 'Online' : 'Offine' }</Text>
+                            <Text style={styles.status}>{ user2!.online ? 'Online' : 'Offline' }</Text>
                         </View>
                     </TouchableOpacity>
                 </View>

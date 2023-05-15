@@ -5,7 +5,10 @@ const joinGroupChatRooms = (socket: any) => {
     return ({ roomIds }: { roomIds: string[] }) => {
         console.log('SOCKET join-group-chat-rooms');
         if (!roomIds) return socket.emit('error', { message: 'Please provide room ids' });
-        roomIds.forEach((roomId: string) => socket.join(`group-chat-room: ${roomId}`));
+        roomIds.forEach((roomId: string) => {
+            socket.join(`group-chat-room: ${roomId}`);
+            socket.broadcast.to(`group-chat-room: ${roomId}`).emit('online-notification', { roomId, userId: socket.data.userId, type: 'group-chat-room' });
+        });
     };
 };
 

@@ -88,51 +88,58 @@ const DirectChatRoomDetailsScreen = () => {
 
     useEffect(() => {
         fetchMutualGroups();
+        socket.on('delete-direct-chat-room', ({ roomId }: { roomId: string }) => {
+            navigation.navigate('Chats List' as never);
+        });
     }, []);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                    <Ionicons name="chevron-back" size={30} color="#009EDC" />
-                </TouchableOpacity>
-                <Text style={styles.headerText}>Contact Info</Text>
-            </View>
-            <ScrollView contentContainerStyle={styles.infoContainer}>
-                <View style={styles.info}>
-                    <Image style={{ width: user2!.profilePic ? 130 : 300, height: user2!.profilePic ? 130 : 150, borderRadius: 130 / 2 }} source={user2!.profilePic ? { uri: user2!.profilePic } : require('../assets/profile-pic.png')} />
-                    <View style={[styles.textContainer, { marginTop: user2!.profilePic ? 25 : 0 }]}>
-                        <Text style={styles.username}>{ user2!.username }</Text>
-                        <Text style={styles.email}>{ user2!.email }</Text>
+        <>
+            {room && (
+                <SafeAreaView style={styles.container}>
+                    <View style={styles.header}>
+                        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                            <Ionicons name="chevron-back" size={30} color="#009EDC" />
+                        </TouchableOpacity>
+                        <Text style={styles.headerText}>Contact Info</Text>
                     </View>
-                    <View style={styles.bioContainer}>
-                        <Text style={styles.bio}>{ user2!.bio ? user2!.bio : 'Available' }</Text>
-                    </View>
-                    <TouchableOpacity style={styles.updateWallpaperBtn} onPress={editWallpaper}>
-                        <Text style={styles.updateWallpaperBtnText}>Edit Wallpaper</Text>
-                    </TouchableOpacity>
-                </View>
-                {mutualGroups.length > 0 && (
-                    <View style={styles.mutualGroupContainer}>
-                        <Text style={styles.mutualGroupText}>1 Mutual Groups</Text>
-                        <View style={styles.mutualGroupList}>
-                            {mutualGroups.map((mutualGroup: GroupChatRoomType) => (
-                                <TouchableOpacity style={styles.mutualGroup} onPress={() => navigation.navigate('Group Chat Room' as never, { roomId: mutualGroup._id } as never)}>
-                                    <Image style={styles.mutualGroupProfilePic} source={mutualGroup.groupPic ? mutualGroup.groupPic : require('../assets/profile-pic.png')} />
-                                    <View style={styles.mutualGroupTextContainer}>
-                                        <Text style={styles.mutualGroupName}>{ mutualGroup.name }</Text>
-                                        <Text style={styles.mutualGroupParticipants}>{ displayParticipants(mutualGroup) }</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
+                    <ScrollView contentContainerStyle={styles.infoContainer}>
+                        <View style={styles.info}>
+                            <Image style={{ width: user2!.profilePic ? 130 : 300, height: user2!.profilePic ? 130 : 150, borderRadius: 130 / 2 }} source={user2!.profilePic ? { uri: user2!.profilePic } : require('../assets/profile-pic.png')} />
+                            <View style={[styles.textContainer, { marginTop: user2!.profilePic ? 25 : 0 }]}>
+                                <Text style={styles.username}>{ user2!.username }</Text>
+                                <Text style={styles.email}>{ user2!.email }</Text>
+                            </View>
+                            <View style={styles.bioContainer}>
+                                <Text style={styles.bio}>{ user2!.bio ? user2!.bio : 'Available' }</Text>
+                            </View>
+                            <TouchableOpacity style={styles.updateWallpaperBtn} onPress={editWallpaper}>
+                                <Text style={styles.updateWallpaperBtnText}>Edit Wallpaper</Text>
+                            </TouchableOpacity>
                         </View>
-                    </View>
-                )}
-                <TouchableOpacity style={styles.deleteChatBtn} onPress={renderDeleteChatRoomModal}>
-                    <Text style={styles.deleteChatBtnText}>Delete Chat</Text>
-                </TouchableOpacity>
-            </ScrollView>
-        </SafeAreaView>
+                        {mutualGroups.length > 0 && (
+                            <View style={styles.mutualGroupContainer}>
+                                <Text style={styles.mutualGroupText}>1 Mutual Groups</Text>
+                                <View style={styles.mutualGroupList}>
+                                    {mutualGroups.map((mutualGroup: GroupChatRoomType) => (
+                                        <TouchableOpacity style={styles.mutualGroup} onPress={() => navigation.navigate('Group Chat Room' as never, { roomId: mutualGroup._id } as never)}>
+                                            <Image style={styles.mutualGroupProfilePic} source={mutualGroup.groupPic ? mutualGroup.groupPic : require('../assets/profile-pic.png')} />
+                                            <View style={styles.mutualGroupTextContainer}>
+                                                <Text style={styles.mutualGroupName}>{ mutualGroup.name }</Text>
+                                                <Text style={styles.mutualGroupParticipants}>{ displayParticipants(mutualGroup) }</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
+                        <TouchableOpacity style={styles.deleteChatBtn} onPress={renderDeleteChatRoomModal}>
+                            <Text style={styles.deleteChatBtnText}>Delete Chat</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </SafeAreaView>
+            )}
+        </>
     );
 };
 

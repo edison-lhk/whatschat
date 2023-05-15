@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, ScrollView } from "react-native";
 import DirectChatItem from "./DirectChatItem";
 import GroupChatItem from "./GroupChatItem";
-import { UserType, DirectChatRoomType, GroupChatRoomType } from "../types/app";
+import { DirectChatRoomType, GroupChatRoomType } from "../types/app";
 import { Socket } from "socket.io-client";
 import { RootState } from "../redux/store";
 import { useSelector } from "react-redux";

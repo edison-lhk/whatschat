@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View, TouchableOpacity, Image, Text, Platform, StatusBar, SafeAreaView, ScrollView, Alert } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
@@ -95,64 +95,74 @@ const GroupChatRoomDetailsScreen = () => {
         };
     };
 
+    useEffect(() => {
+        socket.on('delete-group-chat-room', ({ roomId }: { roomId: string }) => {
+            navigation.navigate('Chats List' as never);
+        });
+    }, []);
+
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                    <Ionicons name="chevron-back" size={30} color="#009EDC" />
-                </TouchableOpacity>
-                <Text style={styles.headerText}>Group Info</Text>
-            </View>
-            <ScrollView contentContainerStyle={styles.infoContainer}>
-                <View style={styles.info}>
-                    <Image style={{ width: room!.groupPic ? 130 : 300, height: room!.groupPic ? 130 : 150, borderRadius: 130 / 2 }} source={room!.groupPic ? { uri: room!.groupPic } : require('../assets/profile-pic.png')} />
-                    <View style={[styles.textContainer, { marginTop: room!.groupPic ? 40 : 15 }]}>
-                        <TouchableOpacity style={styles.updateGroupPicBtn} onPress={editGroupPic}>
-                            <Text style={styles.updateGroupPicBtnText}>Edit</Text>
+        <>
+            {room && (
+                <SafeAreaView style={styles.container}>
+                    <View style={styles.header}>
+                        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                            <Ionicons name="chevron-back" size={30} color="#009EDC" />
                         </TouchableOpacity>
-                        <Text style={styles.groupName}>{ room!.name }</Text>
-                        <Text style={styles.groupText}>Group</Text>
+                        <Text style={styles.headerText}>Group Info</Text>
                     </View>
-                    <View style={styles.bioContainer}>
-                        <Text style={styles.bio}>{ room!.bio ? room!.bio : 'Available' }</Text>
-                    </View>
-                    <TouchableOpacity style={styles.updateWallpaperBtn} onPress={editWallpaper}>
-                        <Text style={styles.updateWallpaperBtnText}>Edit Wallpaper</Text>
-                    </TouchableOpacity>
-                </View>
-                {room!.users!.length > 0 && (
-                    <View style={[styles.participantContainer, { marginBottom: user._id === room!.admin!._id ? 0 : 80 }]}>
-                        <Text style={styles.participantText}>1 Mutual Groups</Text>
-                        <View style={styles.participantList}>
-                            {room!.users!.map((participant: any) => {
-                                return participant._id !== user._id ? (
-                                    <TouchableOpacity style={[styles.participant, { paddingHorizontal: participant.profilePic ? 30 : 15, gap: participant.profilePic ? 20 : 5 }]}>
-                                        <Image style={{ height: participant.profilePic ? 35 : 80, width: participant.profilePic ? 35 : 65, borderRadius: 35 / 2, top: 5 }} source={participant.profilePic ? { uri: participant.profilePic } : require('../assets/profile-pic.png')} />
-                                        <View style={styles.participantTextContainer}>
-                                            <Text style={styles.participantName}>{ participant.username }</Text>
-                                            <Text style={styles.participantBio}>{ participant.bio ? participant.bio : 'Available' }</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity style={[styles.participant, { paddingHorizontal: participant.profilePic ? 30 : 15, gap: participant.profilePic ? 20 : 5 }]}>
-                                        <Image style={{ height: participant.profilePic ? 35 : 80, width: participant.profilePic ? 35 : 65, borderRadius: 35 / 2, top: 5 }} source={participant.profilePic ? { uri: participant.profilePic } : require('../assets/profile-pic.png')} />
-                                        <View style={styles.participantTextContainer}>
-                                            <Text style={styles.participantName}>You</Text>
-                                            <Text style={styles.participantBio}>{ participant.bio ? participant.bio : 'Available' }</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                )
-                            })}
+                    <ScrollView contentContainerStyle={styles.infoContainer}>
+                        <View style={styles.info}>
+                            <Image style={{ width: room!.groupPic ? 130 : 300, height: room!.groupPic ? 130 : 150, borderRadius: 130 / 2 }} source={room!.groupPic ? { uri: room!.groupPic } : require('../assets/profile-pic.png')} />
+                            <View style={[styles.textContainer, { marginTop: room!.groupPic ? 40 : 15 }]}>
+                                <TouchableOpacity style={styles.updateGroupPicBtn} onPress={editGroupPic}>
+                                    <Text style={styles.updateGroupPicBtnText}>Edit</Text>
+                                </TouchableOpacity>
+                                <Text style={styles.groupName}>{ room!.name }</Text>
+                                <Text style={styles.groupText}>Group</Text>
+                            </View>
+                            <View style={styles.bioContainer}>
+                                <Text style={styles.bio}>{ room!.bio ? room!.bio : 'Available' }</Text>
+                            </View>
+                            <TouchableOpacity style={styles.updateWallpaperBtn} onPress={editWallpaper}>
+                                <Text style={styles.updateWallpaperBtnText}>Edit Wallpaper</Text>
+                            </TouchableOpacity>
                         </View>
-                    </View>
-                )}
-                {user._id === room!.admin!._id && (
-                    <TouchableOpacity style={[styles.deleteChatBtn, { marginBottom: 80 }]} onPress={renderDeleteChatRoomModal}>
-                        <Text style={styles.deleteChatBtnText}>Delete Chat</Text>
-                    </TouchableOpacity>
-                )}
-            </ScrollView>
-        </SafeAreaView>
+                        {room!.users!.length > 0 && (
+                            <View style={[styles.participantContainer, { marginBottom: user._id === room!.admin!._id ? 0 : 80 }]}>
+                                <Text style={styles.participantText}>1 Mutual Groups</Text>
+                                <View style={styles.participantList}>
+                                    {room!.users!.map((participant: any) => {
+                                        return participant._id !== user._id ? (
+                                            <TouchableOpacity style={[styles.participant, { paddingHorizontal: participant.profilePic ? 30 : 15, gap: participant.profilePic ? 20 : 5 }]}>
+                                                <Image style={{ height: participant.profilePic ? 35 : 80, width: participant.profilePic ? 35 : 65, borderRadius: 35 / 2, top: 5 }} source={participant.profilePic ? { uri: participant.profilePic } : require('../assets/profile-pic.png')} />
+                                                <View style={styles.participantTextContainer}>
+                                                    <Text style={styles.participantName}>{ participant.username }</Text>
+                                                    <Text style={styles.participantBio}>{ participant.bio ? participant.bio : 'Available' }</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <TouchableOpacity style={[styles.participant, { paddingHorizontal: participant.profilePic ? 30 : 15, gap: participant.profilePic ? 20 : 5 }]}>
+                                                <Image style={{ height: participant.profilePic ? 35 : 80, width: participant.profilePic ? 35 : 65, borderRadius: 35 / 2, top: 5 }} source={participant.profilePic ? { uri: participant.profilePic } : require('../assets/profile-pic.png')} />
+                                                <View style={styles.participantTextContainer}>
+                                                    <Text style={styles.participantName}>You</Text>
+                                                    <Text style={styles.participantBio}>{ participant.bio ? participant.bio : 'Available' }</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        )
+                                    })}
+                                </View>
+                            </View>
+                        )}
+                        {user._id === room!.admin!._id && (
+                            <TouchableOpacity style={[styles.deleteChatBtn, { marginBottom: 80 }]} onPress={renderDeleteChatRoomModal}>
+                                <Text style={styles.deleteChatBtnText}>Delete Chat</Text>
+                            </TouchableOpacity>
+                        )}
+                    </ScrollView>
+                </SafeAreaView>
+            )}
+        </>
     );
 };
 
